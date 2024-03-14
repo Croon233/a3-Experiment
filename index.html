@@ -183,32 +183,27 @@
             return dataset;
         }
 
-        function randomOrder() {
-            var order = [];
-            var count = 20;
-            // Add 20 Bubble Charts
-            for (let i = 0; i < count; i++) {
-                order.push(4); // Assuming 4 represents Bubble Chart
-            }
+function randomOrder() {
+    var order = [];
+    var count = 80;
+    var types = [1, 2, 3, 4]; // 图表类型的数组，每个数字代表一个类型
 
-            // Add 20 TreeMaps
-            for (let i = 0; i < count; i++) {
-                order.push(3); // Assuming 3 represents TreeMap
-            }
+    // 打乱图表类型的顺序
+    types = types.sort(() => Math.random() - 0.5);
 
-            // Add 20 Donut Charts
-            for (let i = 0; i < count; i++) {
-                order.push(2); // Assuming 2 represents Donut Chart
-            }
-
-            // Add 20 Stack Charts
-            for (let i = 0; i < count; i++) {
-                order.push(1); // Assuming 1 represents Stack Chart
-            }
-
-            console.log(order);
-            return order;
+    // 为每个类型添加对应数量的实例
+    for (let i = 0; i < types.length; i++) {
+        for (let j = 0; j < count / types.length; j++) {
+            order.push(types[i]);
         }
+    }
+
+    // 随机打乱 order 数组的顺序
+    order = order.sort(() => Math.random() - 0.5);
+
+    console.log(order);
+    return order;
+}
 
 
         function makeTest(num) {
@@ -278,71 +273,75 @@
         }
 
 
-        //  stack bar chart
         function makeStackChart(dataset) {
-            const width = 460;
-            const height = 200;
-            const margin = { top: 20, right: 10, bottom: 20, left: 10 };
-            const h = height * 0.66;
-            const barHeight = 100;
-            const halfBarHeight = barHeight / 2;
-            const dotRadius = 5;
-            //const colors = ["red", "blue", "yellow", "green", "orange"];
+    const width = 460;
+    const height = 200;
+    const margin = { top: 20, right: 10, bottom: 20, left: 10 };
+    const h = height * 0.66;
+    const barHeight = 100;
+    const halfBarHeight = barHeight / 2;
+    const dotRadius = 5;
+    // 移除之前的颜色数组
+    // const colors = ["red", "blue", "yellow", "green", "orange"];
 
-            const total = d3.sum(dataset.data, d => d.val);
+    const total = d3.sum(dataset.data, d => d.val);
 
-            function groupDataFunc(data) {
-                const percent = d3.scaleLinear()
-                    .domain([0, total])
-                    .range([0, 100]);
+    function groupDataFunc(data) {
+        const percent = d3.scaleLinear()
+            .domain([0, total])
+            .range([0, 100]);
 
-                let cumulative = 0;
-                const _data = data.map((d, i) => {
-                    cumulative += d.val;
-                    return {
-                        value: d.val,
-                        cumulative: cumulative - d.val,
-                        label: 'Group ' + (i + 1),
-                        percent: percent(d.val)
-                    };
-                }).filter(d => d.value > 0);
+        let cumulative = 0;
+        const _data = data.map((d, i) => {
+            cumulative += d.val;
+            return {
+                value: d.val,
+                cumulative: cumulative - d.val,
+                label: 'Group ' + (i + 1),
+                percent: percent(d.val)
+            };
+        }).filter(d => d.value > 0);
 
-                return _data;
-            }
+        return _data;
+    }
 
-            const groupData = groupDataFunc(dataset.data);
+    const groupData = groupDataFunc(dataset.data);
 
-            const svg = d3.select("#vis").append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", h + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    const svg = d3.select("#vis").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", h + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            const xScale = d3.scaleLinear()
-                .domain([0, total])
-                .range([0, width]);
+    const xScale = d3.scaleLinear()
+        .domain([0, total])
+        .range([0, width]);
 
-            const join = svg.selectAll('g')
-                .data(groupData)
-                .enter().append('g')
-                .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    const join = svg.selectAll('g')
+        .data(groupData)
+        .enter().append('g')
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-            join.append('rect')
-                .attr('class', 'rect-stacked')
-                .attr('x', d => xScale(d.cumulative))
-                .attr('y', h / 2 - halfBarHeight)
-                .attr('height', barHeight)
-                .attr('width', d => xScale(d.value))
-                .style('fill', (d, i) => colors[i]);
+    join.append('rect')
+        .attr('class', 'rect-stacked')
+        .attr('x', d => xScale(d.cumulative))
+        .attr('y', h / 2 - halfBarHeight)
+        .attr('height', barHeight)
+        .attr('width', d => xScale(d.value))
+        // 将矩形的填充颜色设置为白色
+        .style('fill', 'white')
+        // 将矩形的边缘颜色设置为黑色
+        .style('stroke', 'black');
 
-            join.filter((d, i) => i === dataset.firstPoint || i === dataset.secPoint)
-                .append('circle')
-                .attr('cx', (d, i) => xScale(d.cumulative) + (xScale(d.value) / 2))
-                .attr('cy', h / 2)
-                .attr('r', dotRadius)
-                .style('fill', 'black')
-                .style('stroke', 'black'); // 设置边缘颜色为黑色
-        }
+    join.filter((d, i) => i === dataset.firstPoint || i === dataset.secPoint)
+        .append('circle')
+        .attr('cx', (d, i) => xScale(d.cumulative) + (xScale(d.value) / 2))
+        .attr('cy', h / 2)
+        .attr('r', dotRadius)
+        .style('fill', 'black')
+        .style('stroke', 'black'); // 设置边缘颜色为黑色
+}
+
 
 
         // donut chart
